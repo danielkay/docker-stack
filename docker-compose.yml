@@ -1,0 +1,188 @@
+version: "3.5"
+
+services:
+  traefik:
+    image: traefik:latest
+    command: --api --docker #Enables the web UI and tells Traefik to listen to docker
+    ports:
+      - "127.0.0.1:80:80"     #The HTTP port
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  portainer:
+    image: portainer/portainer:latest
+    ports:
+      - "127.0.0.1:9001:9000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./data/portainer:/data"
+    labels:
+      - "traefik.frontend.rule=Host:portainer.localhost"
+      - "traefik.backend=portainer"
+    command: -H unix:///var/run/docker.sock
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - "./data/prometheus/:/etc/prometheus/"
+      - "prometheus_data:/prometheus"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "127.0.0.1:9090:9090"
+    links:
+      - cadvisor:cadvisor
+    depends_on:
+      - cadvisor
+    restart: always
+    labels:
+      - "traefik.frontend.rule=Host:prometheus.localhost"
+
+  grafana:
+    image: grafana/grafana:latest
+    user: "104"
+    depends_on:
+      - prometheus
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - "grafana_data:/var/lib/grafana"
+      - "./data/grafana/provisioning/:/etc/grafana/provisioning/"
+    env_file:
+      - "./data/grafana/config.monitoring"
+    restart: always
+    labels:
+      - "traefik.frontend.rule=Host:grafana.localhost"
+
+  cadvisor:
+    image: google/cadvisor:latest
+    volumes:
+      - "/:/rootfs:ro"
+      - "/var/run:/var/run:rw"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+    ports:
+      - "127.0.0.1:9091:8080"
+    restart: always
+    labels:
+      - "traefik.frontend.rule=Host:cadvisor.localhost"
+
+  nodeexporter:
+    image: prom/node-exporter:latest
+    volumes:
+      - "/proc:/host/proc:ro"
+      - "/sys:/host/sys:ro"
+      - "/:/rootfs:ro"
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    restart: unless-stopped
+
+  blackfire:
+    image: blackfire/blackfire
+    environment:
+      # Exposes the host BLACKFIRE_SERVER_ID and TOKEN environment variables.
+      - BLACKFIRE_SERVER_ID
+      - BLACKFIRE_SERVER_TOKEN
+      # You can also use global environment credentials :
+      # BLACKFIRE_SERVER_ID: SERVER-ID
+      # BLACKFIRE_SERVER_TOKEN: SERVER-TOKEN
+
+  localstack:
+    image: localstack/localstack:latest
+    ports: # map localstack ports to host
+      - "127.0.0.1:${DYNAMODB_PORT-4569}:4569"
+      - "127.0.0.1:${S3_PORT-4572}:4572"
+      - "127.0.0.1:${LAMBDA_PORT-4574}:4574"
+      - "127.0.0.1:${SNS_PORT-4575}:4575"
+      - "127.0.0.1:${SQS_PORT-4576}:4576"
+      - "127.0.0.1:${SECRETSMANAGER_PORT-4584}:4584"
+      - "127.0.0.1:${CLOUDWATCH_LOGS_PORT-4586}:4586"
+    expose: # expose ports to other containers @ localhost
+      - "4569"
+      - "4572"
+      - "4574"
+      - "4575"
+      - "4576"
+      - "4584"
+      - "4586"
+    environment:
+      DEBUG: 1
+      LAMBDA_EXECUTOR: local
+      DOCKER_HOST: unix:///var/run/docker.sock
+      SERVICES: dynamodb,s3,lambda,sns,sqs,secretsmanager
+      DEFAULT_REGION: eu-west-1
+      HOSTNAME_EXTERNAL: localstack
+      DATA_DIR: /tmp/localstack/data
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./data/localstack:/tmp/localstack"
+    labels:
+      - "traefik.frontend.rule=Host:localstack.localhost"
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
+    labels:
+      - "traefik.frontend.rule=Host:mailhog.localhost"
+      - "traefik.port=8025"
+
+  dockerhost:
+    image: qoomon/docker-host
+    restart: on-failure
+    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
+
+  sonarqube:
+    image: sonarqube
+    expose:
+      - 9000
+    ports:
+      - "127.0.0.1:9990:9000"
+    environment:
+      - SONARQUBE_JDBC_URL=jdbc:postgresql://sonarqubedb:5432/sonar
+      - SONARQUBE_JDBC_USERNAME=sonar
+      - SONARQUBE_JDBC_PASSWORD=sonar
+    volumes:
+      - sonarqube_conf:/opt/sonarqube/conf
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_bundled-plugins:/opt/sonarqube/lib/bundled-plugins
+    labels:
+      - "traefik.frontend.rule=Host:sonarqube.localhost"
+      - "traefik.port=9000"
+
+  sonarqubedb:
+    image: postgres
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+    volumes:
+      - postgresql:/var/lib/postgresql
+      - postgresql_data:/var/lib/postgresql/data
+
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
+  sonarqube_conf: {}
+  sonarqube_data: {}
+  sonarqube_extensions: {}
+  sonarqube_bundled-plugins: {}
+  postgresql: {}
+  postgresql_data: {}
+
+networks:
+  default:
+    name: traefik
+    driver_opts:
+      com.docker.network.enable_ipv6: "true"
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.23.76/26
