@@ -28,7 +28,7 @@ networks:
 
 |Tool|localhost URL|dnsmasq URL|
 |---|---|---|
-| **Portainer** | [http://localhost:9000](http://localhost:9000) | [http://portainer.localhost](http://portainer.localhost) |
+| **Portainer** | [http://localhost:9001](http://localhost:9001) | [http://portainer.localhost](http://portainer.localhost) |
 | **Prometheus** | [http://localhost:9090](http://localhost:9090) | [http://prometheus.localhost](http://prometheus.localhost) |
 | **Grafana** | [http://localhost:3000](http://localhost:3000) | [http://grafana.localhost](http://grafana.localhost) |
 | **Mailhog** | [http://localhost:8025](http://localhost:8025) | [http://mailhog.localhost](http://mailhog.localhost) |

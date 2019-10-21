@@ -1,0 +1,12 @@
+http:
+  middlewares:
+    https-redirect:
+      redirectScheme:
+        scheme: https
+
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /certs/localhost.crt
+        keyFile: /certs/localhost.key
