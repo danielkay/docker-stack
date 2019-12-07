@@ -124,55 +124,6 @@ services:
       - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
     restart: unless-stopped
 
-  blackfire:
-    image: blackfire/blackfire
-    environment:
-      # Exposes the host BLACKFIRE_SERVER_ID and TOKEN environment variables.
-      - BLACKFIRE_SERVER_ID
-      - BLACKFIRE_SERVER_TOKEN
-      # You can also use global environment credentials :
-      # BLACKFIRE_SERVER_ID: SERVER-ID
-      # BLACKFIRE_SERVER_TOKEN: SERVER-TOKEN
-
-  localstack:
-    image: localstack/localstack:latest
-    ports: # map localstack ports to host
-      - "127.0.0.1:${DYNAMODB_PORT-4569}:4569"
-      - "127.0.0.1:${S3_PORT-4572}:4572"
-      - "127.0.0.1:${LAMBDA_PORT-4574}:4574"
-      - "127.0.0.1:${SNS_PORT-4575}:4575"
-      - "127.0.0.1:${SQS_PORT-4576}:4576"
-      - "127.0.0.1:${SECRETSMANAGER_PORT-4584}:4584"
-      - "127.0.0.1:${CLOUDWATCH_LOGS_PORT-4586}:4586"
-    expose: # expose ports to other containers @ localhost
-      - "4569"
-      - "4572"
-      - "4574"
-      - "4575"
-      - "4576"
-      - "4584"
-      - "4586"
-    environment:
-      DEBUG: 1
-      LAMBDA_EXECUTOR: local
-      DOCKER_HOST: unix:///var/run/docker.sock
-      SERVICES: dynamodb,s3,lambda,sns,sqs,secretsmanager
-      DEFAULT_REGION: eu-west-1
-      HOSTNAME_EXTERNAL: localstack
-      DATA_DIR: /tmp/localstack/data
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "./data/localstack:/tmp/localstack"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.localstack.entrypoints=http"
-      - "traefik.http.routers.localstack.rule=Host(`localstack.dev.localhost`)"
-      - "traefik.http.routers.localstack.middlewares=https-redirect@file"
-      - "traefik.http.routers.localstack-secure.entrypoints=https"
-      - "traefik.http.routers.localstack-secure.rule=Host(`localstack.dev.localhost`)"
-      - "traefik.http.routers.localstack-secure.tls=true"
-      - "traefik.docker.network=traefik"
-
   mailhog:
     image: mailhog/mailhog:latest
     labels:
@@ -186,51 +137,9 @@ services:
       - "traefik.http.services.mailhog.loadbalancer.server.port=8025"
       - "traefik.docker.network=traefik"
 
-  dockerhost:
-    image: qoomon/docker-host
-    restart: on-failure
-    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
-
-  sonarqube:
-    image: sonarqube
-    environment:
-      - SONARQUBE_JDBC_URL=jdbc:postgresql://sonarqubedb:5432/sonar
-      - SONARQUBE_JDBC_USERNAME=sonar
-      - SONARQUBE_JDBC_PASSWORD=sonar
-    volumes:
-      - sonarqube_conf:/opt/sonarqube/conf
-      - sonarqube_data:/opt/sonarqube/data
-      - sonarqube_extensions:/opt/sonarqube/extensions
-      - sonarqube_bundled-plugins:/opt/sonarqube/lib/bundled-plugins
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.sonarqube.entrypoints=http"
-      - "traefik.http.routers.sonarqube.rule=Host(`sonarqube.dev.localhost`)"
-      - "traefik.http.routers.sonarqube.middlewares=https-redirect@file"
-      - "traefik.http.routers.sonarqube-secure.entrypoints=https"
-      - "traefik.http.routers.sonarqube-secure.rule=Host(`sonarqube.dev.localhost`)"
-      - "traefik.http.routers.sonarqube-secure.tls=true"
-      - "traefik.http.services.sonarqube.loadbalancer.server.port=9000"
-      - "traefik.docker.network=traefik"
-
-  sonarqubedb:
-    image: postgres
-    environment:
-      - POSTGRES_USER=sonar
-      - POSTGRES_PASSWORD=sonar
-    volumes:
-      - postgresql:/var/lib/postgresql
-      - postgresql_data:/var/lib/postgresql/data
-
 volumes:
   prometheus_data: {}
   grafana_data: {}
-  sonarqube_conf: {}
-  sonarqube_data: {}
-  sonarqube_extensions: {}
-  sonarqube_bundled-plugins: {}
-  postgresql: {}
-  postgresql_data: {}
 
 networks:
   default:
