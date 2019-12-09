@@ -10,7 +10,7 @@ usage:
 	@echo " $(L)┡━━━━━━━━━━━━━━━━━━━━━━━━━━┩$(R)"
 	@echo " $(L)│ $(R)Available Commands:$(L)      │$(R)"
 	@echo " $(L)╰─┬────────────────────────╯$(R)"
-	@echo "   $(L)╰─$(R) $(P)up$(R) - launch full docker development stack:"
+	@echo "   $(L)╰─$(R) $(P)up$(R) - launch full docker development stack"
 	@echo ""
 
 MKFILE := $(abspath $(lastword $(MAKEFILE_LIST)))
