@@ -29,36 +29,3 @@ networks:
 | **Prometheus** | [http://localhost:9090](http://localhost:9090) | [http://prometheus.localhost](http://prometheus.localhost) |
 | **Grafana** | [http://localhost:3000](http://localhost:3000) | [http://grafana.localhost](http://grafana.localhost) |
 | **Mailhog** | [http://localhost:8025](http://localhost:8025) | [http://mailhog.localhost](http://mailhog.localhost) |
-
-## dnsmasq
-
-Setup of dnsmasq went as follows:
-
-#### install dnsmasq
-'sudo apt install dnsmasq'
-#### edit dnsmasq configuration
-'vi /etc/dnsmasq.conf'
-```
-address=/localhost/127.0.0.1
-listen-address=127.0.0.1
-server=8.8.8.8
-server=8.8.4.4
-```
-#### edit dnsmasq cache config
-`vi /etc/NetworkManager/dnsmasq.d/cache.conf`
-```
-cache-size=1000
-net-ttl=900
-```
-#### edit systemd-resolved configuration
-`vi /etc/systemd/resolved.conf`
-```
-DNSStubListener=no
-```
-`sudo systemctl restart systemd-resolved`
-
-`sudo systemctl restart dnsmasq`
-
-`sudo systemctl enable dnsmasq`
-
-`sudo systemctl restart network-manager`
