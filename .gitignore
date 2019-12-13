@@ -1,3 +1,5 @@
 # Created by .ignore support plugin (hsz.mobi)
 /data/localstack/
 /data/portainer/
+/certs/localhost.crt
+/certs/localhost.key
