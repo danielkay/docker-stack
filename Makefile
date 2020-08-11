@@ -35,5 +35,5 @@ cert:
 	echo "$(G)Done!$(R)\n\r"
 up:
 	@echo "$(P)Launching Infrastructure Containers...$(R)";\
-	COMPOSE_IGNORE_ORPHANS=True docker-compose --log-level ERROR -p dockerstack up -d;\
+	COMPOSE_IGNORE_ORPHANS=True docker-compose --log-level ERROR -p docker-stack up -d;\
 	echo "$(G)Done!$(R)\n\r"
