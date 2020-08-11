@@ -10,25 +10,43 @@ This repo will launch several containers:
 - [node-exporter](https://github.com/prometheus/node_exporter) - exporter for docker host machine metrics
 - [mailhog](https://github.com/mailhog/MailHog) - Web and API based SMTP testing
 
-In order to monitor the entire stack, each project must be connected to a single Docker network which enables effective
-communication between each of the services therein. This repo creates a network named 'traefik', to which all other
-project repos should be connected.
+In order to make use of features such as the `mailhog` container, any relevant container must be connected to the
+`docker-stack` network - this can be performed via the [Portainer interface](https://portainer.dev.localhost), or by
+running the following command:
 
-To connect another project to the Traefik network, simply configure the *network* section in the relevant
-`docker-compose.yml` file as follows:
+`docker network connect docker-stack <container name>`
+
+You must then configure your application appropriately, such as sending emails to `mailhog:1025` or configuring
+instrumentation in your application for collection via Prometheus.
+
+Speaking of which...
+
+## Prometheus Instrumentation
+
+First, add appropriate instrumentation and Prometheus exporters to your application. This could take any number of
+forms depending on the project and is out of scope for this document, however once this has been configured you can
+then merely add configuration to `data/prometheus/prometheus.yaml` to periodically hit your monitoring endpoint
+to scrape metrics:
 
 ```
-networks:
-  default:
-    external:
-      name: traefik
+[...]
+scrape_configs:
+    [...]
+  - job_name: 'phoenix_app'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['docker-phoenix_app_1:4000']
 ```
+
+Once Prometheus is successfully pulling the desired data points (you should start to see those defined by your
+instrumentation appearing in [the Prometheus dashboard](https://prometheus.dev.localhost)), you can begin
+[using Grafana](https://grafana.dev.localhost) to create Dashboards for visualisation of your metrics.
 
 ## Supporting Stack URLs
 
-|Tool|URL|
-|---|---|
-| **Portainer** | [http://portainer.dev.localhost](http://portainer.dev.localhost) |
-| **Prometheus** | [http://prometheus.dev.localhost](http://prometheus.dev.localhost) |
-| **Grafana** | [http://grafana.dev.localhost](http://grafana.dev.localhost) |
-| **Mailhog** | [http://mailhog.dev.localhost](http://mailhog.dev.localhost) |
+|Tool|URL|Localhost|
+|---|---|---|
+| **Portainer** | [https://portainer.dev.localhost](https://portainer.dev.localhost) | [https://localhost:9000](https://localhost:9000) |
+| **Prometheus** | [https://prometheus.dev.localhost](https://prometheus.dev.localhost) | [https://localhost:9090](https://localhost:9090) |
+| **Grafana** | [https://grafana.dev.localhost](https://grafana.dev.localhost) | [https://localhost:3000](https://localhost:3000) |
+| **Mailhog** | [https://mailhog.dev.localhost](https://mailhog.dev.localhost) | [https://localhost:8025](https://localhost:8025) |
