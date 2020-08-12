@@ -46,7 +46,7 @@ instrumentation appearing in [the Prometheus dashboard](https://prometheus.dev.l
 
 |Tool|URL|Localhost|
 |---|---|---|
-| **Portainer** | [https://portainer.dev.localhost](https://portainer.dev.localhost) | [https://localhost:9000](https://localhost:9000) |
-| **Prometheus** | [https://prometheus.dev.localhost](https://prometheus.dev.localhost) | [https://localhost:9090](https://localhost:9090) |
-| **Grafana** | [https://grafana.dev.localhost](https://grafana.dev.localhost) | [https://localhost:3000](https://localhost:3000) |
-| **Mailhog** | [https://mailhog.dev.localhost](https://mailhog.dev.localhost) | [https://localhost:8025](https://localhost:8025) |
+| **Portainer** | [https://portainer.dev.localhost](https://portainer.dev.localhost) | [https://localhost:6000](https://localhost:6000) |
+| **Prometheus** | [https://prometheus.dev.localhost](https://prometheus.dev.localhost) | [https://localhost:6001](https://localhost:6001) |
+| **Grafana** | [https://grafana.dev.localhost](https://grafana.dev.localhost) | [https://localhost:6002](https://localhost:6002) |
+| **Mailhog** | [https://mailhog.dev.localhost](https://mailhog.dev.localhost) | [https://localhost:6003](https://localhost:6003) |
