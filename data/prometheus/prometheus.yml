@@ -38,3 +38,8 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
       - targets: ['nodeexporter:9100']
+
+  - job_name: 'kraken'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['host.docker.internal:9000']
